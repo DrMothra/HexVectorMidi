@@ -297,10 +297,14 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 		currentTime = queuedTime - offset;
 		///
 		var event = obj[0].event;
+		var track = obj[0].track;
 		if (event.type !== 'channel') {
 			continue;
 		}
 		///
+		//DEBUG
+		console.log("Track = ", track);
+
 		var channelId = event.channel;
 		var channel = MIDI.channels[channelId];
 		var delay = ctx.currentTime + ((currentTime + foffset + midi.startDelay) / 1000);
@@ -318,6 +322,8 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 			case 'noteOn':
 				if (channel.mute) break;
 				note = event.noteNumber - (midi.MIDIOffset || 0);
+					//DEBUG
+					if(track >=1 &&  track <= 5) event.velocity = 0;
 				eventQueue.push({
 				    event: event,
 				    time: queueTime,
