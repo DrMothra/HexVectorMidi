@@ -57,7 +57,14 @@
 		};
 
 		midi.noteOn = function(channelId, noteId, velocity, delay) {
+			var track = channelId;
+			channelId = 0;
 			delay = delay || 0;
+
+			if(sessionStorage.getItem("mute")) {
+				velocity = 0;
+			}
+			console.log("Velocity = ", velocity);
 
 			/// check whether the note exists
 			var channel = root.channels[channelId];

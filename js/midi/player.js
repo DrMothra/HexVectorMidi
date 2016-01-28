@@ -19,13 +19,15 @@ midi.playing = false;
 midi.timeWarp = 1;
 midi.startDelay = 0;
 midi.BPM = 120;
+midi.trackMuteStates = [false, false, false, false, false, false, false, false,
+                        false, false, false, false, false, false, false, false];
 
 midi.start =
 midi.resume = function(onsuccess) {
     if (midi.currentTime < -1) {
     	midi.currentTime = -1;
     }
-    startAudio(midi.currentTime, null, onsuccess);
+    startAudio(midi.currentTime, true, onsuccess);
 };
 
 midi.pause = function() {
@@ -185,6 +187,14 @@ midi.getFileInstruments = function() {
 	}
 	return ret;
 };
+//Track mute
+midi.setTrackMute = function(trackNumber, muteStatus) {
+    midi.trackMuteStates[trackNumber] = muteStatus;
+};
+
+midi.getTrackMute = function(trackNumber) {
+    return midi.trackMuteStates[trackNumber];
+};
 
 // Playing the audio
 
@@ -201,7 +211,8 @@ var scheduleTracking = function(channel, note, currentTime, offset, message, vel
 			now: currentTime,
 			end: midi.endTime,
 			message: message,
-			velocity: velocity
+			velocity: velocity,
+            track: 5
 		};
 		//
 		if (message === 128) {
@@ -303,7 +314,7 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 		}
 		///
 		//DEBUG
-		console.log("Track = ", track);
+		//console.log("Track = ", track);
 
 		var channelId = event.channel;
 		var channel = MIDI.channels[channelId];
@@ -320,14 +331,19 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 				MIDI.pitchBend(channelId, event.value, delay);
 				break;
 			case 'noteOn':
-				if (channel.mute) break;
+				//if (channel.mute) break;
 				note = event.noteNumber - (midi.MIDIOffset || 0);
-					//DEBUG
-					if(track >=1 &&  track <= 5) event.velocity = 0;
+
+                if(midi.trackMuteStates[track-1]) {
+                    //DEBUG
+                    //console.log("Track ", track, " muted");
+                    event.velocity = 0;
+                }
+
 				eventQueue.push({
 				    event: event,
 				    time: queueTime,
-				    source: MIDI.noteOn(channelId, event.noteNumber, event.velocity, delay),
+				    source: MIDI.noteOn(track, event.noteNumber, event.velocity, delay),
 				    interval: scheduleTracking(channelId, note, queuedTime + midi.startDelay, offset - foffset, 144, event.velocity)
 				});
 				messages++;
