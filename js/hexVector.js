@@ -22,7 +22,6 @@ $(document).ready(function() {
             player.addListener(function(data) {
                 //console.log("Channel = ", data.channel);
                 //console.log("Now = ", data.now);
-                //MIDI.Player.trackMuteStates[data.track] = false;
             });
 
             ///
